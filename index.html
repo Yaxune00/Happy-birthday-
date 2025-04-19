@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For You</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #fce4ec, #fff3e0);
+      font-family: 'Dancing Script', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h1 {
+      font-size: 2.5em;
+      color: #a0522d;
+      margin-bottom: 20px;
+    }
+    #puzzle {
+      width: 600px;
+      height: 600px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-bottom: 20px;
+    }
+    .tile {
+      width: 100%;
+      height: 100%;
+      background-size: 600px 600px;
+      background-repeat: no-repeat;
+      cursor: pointer;
+    }
+    #message {
+      opacity: 0;
+      transition: opacity 1s ease;
+      text-align: center;
+      max-width: 90%;
+      font-size: 1.8em;
+      color: #6a1b9a;
+    }
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/22/audio_c9792b7941.mp3" type="audio/mpeg">
+  </audio>
+  <h1>Solve this to unlock what I feel for you</h1>
+  <div id="puzzle"></div>
+  <div id="message">
+    Since you came into my life, everything’s been calmer. You helped me see more clearly. You make things easier, lighter. 
+    You’re beautiful — your eyes, your smile, your short, gorgeous hair. 
+    I love how feminine and sensitive you are. And honestly? I admire how you dress — like you *know* you look good, and I love that I get to be the one next to you.
+    You support me, understand me, and I feel proud just having you around.
+    We haven't said it yet, but maybe this says enough for now.
+  </div>
+  <script>
+    const pieces = [
+      'tile_0_0.png','tile_0_1.png','tile_0_2.png',
+      'tile_1_0.png','tile_1_1.png','tile_1_2.png',
+      'tile_2_0.png','tile_2_1.png','tile_2_2.png'
+    ];
+    const puzzle = document.getElementById('puzzle');
+    let order = [...pieces];
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+    function checkSolved() {
+      for (let i = 0; i < pieces.length; i++) {
+        if (order[i] !== pieces[i]) return false;
+      }
+      return true;
+    }
+    function renderPuzzle() {
+      puzzle.innerHTML = '';
+      order.forEach((src, index) => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.style.backgroundImage = `url(${src})`;
+        tile.style.backgroundPosition = `-${(index % 3) * 200}px -${Math.floor(index / 3) * 200}px`;
+        tile.onclick = () => {
+          if (index < order.length - 1) {
+            [order[index], order[index + 1]] = [order[index + 1], order[index]];
+            renderPuzzle();
+            if (checkSolved()) {
+              document.getElementById('message').style.opacity = 1;
+            }
+          }
+        };
+        puzzle.appendChild(tile);
+      });
+    }
+    shuffle(order);
+    renderPuzzle();
+  </script>
+</body>
+</html>
