@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,20 +16,21 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      overflow: hidden;
     }
     h1 {
       font-size: 2.5em;
       color: #a0522d;
       margin-bottom: 20px;
+      text-align: center;
+      padding: 0 20px;
     }
     #puzzle {
       width: 600px;
       height: 600px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
       gap: 2px;
-      margin-bottom: 20px;
     }
     .tile {
       width: 100%;
@@ -37,6 +39,10 @@
       background-repeat: no-repeat;
       cursor: pointer;
     }
+    .hidden {
+      background: none;
+      cursor: default;
+    }
     #message {
       opacity: 0;
       transition: opacity 1s ease;
@@ -44,6 +50,7 @@
       max-width: 90%;
       font-size: 1.8em;
       color: #6a1b9a;
+      margin-top: 20px;
     }
     audio {
       display: none;
@@ -63,46 +70,64 @@
     You support me, understand me, and I feel proud just having you around.
     We haven't said it yet, but maybe this says enough for now.
   </div>
+
   <script>
     const pieces = [
       'tile_0_0.png','tile_0_1.png','tile_0_2.png',
       'tile_1_0.png','tile_1_1.png','tile_1_2.png',
       'tile_2_0.png','tile_2_1.png','tile_2_2.png'
     ];
+
     const puzzle = document.getElementById('puzzle');
-    let order = [...pieces];
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    }
-    function checkSolved() {
-      for (let i = 0; i < pieces.length; i++) {
-        if (order[i] !== pieces[i]) return false;
-      }
-      return true;
-    }
+    let tiles = [];
+    let emptyIndex = 8; // The last tile is the empty one
+
     function renderPuzzle() {
       puzzle.innerHTML = '';
-      order.forEach((src, index) => {
+      tiles.forEach((piece, index) => {
         const tile = document.createElement('div');
         tile.className = 'tile';
-        tile.style.backgroundImage = `url(${src})`;
-        tile.style.backgroundPosition = `-${(index % 3) * 200}px -${Math.floor(index / 3) * 200}px`;
-        tile.onclick = () => {
-          if (index < order.length - 1) {
-            [order[index], order[index + 1]] = [order[index + 1], order[index]];
-            renderPuzzle();
-            if (checkSolved()) {
-              document.getElementById('message').style.opacity = 1;
-            }
-          }
-        };
+        if (index === emptyIndex) {
+          tile.classList.add('hidden');
+        } else {
+          const col = piece % 3;
+          const row = Math.floor(piece / 3);
+          tile.style.backgroundImage = 'url(' + pieces[piece] + ')';
+          tile.style.backgroundPosition = `-${col * 200}px -${row * 200}px`;
+          tile.onclick = () => moveTile(index);
+        }
         puzzle.appendChild(tile);
       });
     }
-    shuffle(order);
+
+    function moveTile(index) {
+      const diff = Math.abs(index - emptyIndex);
+      const validMove = (diff === 1 && Math.floor(index / 3) === Math.floor(emptyIndex / 3)) || diff === 3;
+
+      if (validMove) {
+        [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+        emptyIndex = index;
+        renderPuzzle();
+        if (checkSolved()) {
+          document.getElementById('message').style.opacity = 1;
+        }
+      }
+    }
+
+    function checkSolved() {
+      return tiles.every((val, i) => val === i);
+    }
+
+    function shuffleTiles() {
+      tiles = [...Array(9).keys()];
+      for (let i = tiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+      }
+      emptyIndex = tiles.indexOf(8); // Find where the hidden tile ended up
+    }
+
+    shuffleTiles();
     renderPuzzle();
   </script>
 </body>
